@@ -1417,7 +1417,14 @@ const VIEW_APP_SETTINGS = "app-settings";
 
 export default function App() {
   const [contactLists, setContactLists] = useState(initialContactLists);
-  const [contacts, setContacts] = useState(initialContacts);
+  const [contacts, setContacts] = useState([]);
+
+  useEffect(() => {
+    fetch("/api/contacts")
+      .then(res => res.json())
+      .then(data => setContacts(data))
+      .catch(err => console.error("Failed to load contacts:", err));
+  }, []);
 
   const [currentView, setCurrentView] = useState(VIEW_HOME);
   const [selectedListId, setSelectedListId] = useState(null);

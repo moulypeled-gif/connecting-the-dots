@@ -1,5 +1,8 @@
 // server.js - גרסת ESM שמתאימה ל-"type": "module"
 
+import dotenv from "dotenv";
+dotenv.config();
+
 import express from "express";
 import cors from "cors";
 import jwt from "jsonwebtoken";
@@ -26,6 +29,13 @@ const ADMINS = [
     password: process.env.ADMIN_PASS2 || "password2",
   },
 ];
+import pkg from "pg";
+const { Pool } = pkg;
+
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false }
+});
 
 app.use(express.json());
 app.use(cors());
@@ -66,3 +76,13 @@ app.get("*", (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
 });
+app.get("/api/contacts", async (req, res) => {
+  try {
+    const result = await pool.query("SELECT * FROM contacts ORDER BY last_name, first_name;");
+    res.json(result.rows);
+  } catch (err) {
+    console.error("Error reading contacts:", err);
+    res.status(500).json({ error: "Failed to fetch contacts" });
+  }
+});
+
